@@ -38,6 +38,10 @@ public class Usuario implements UserDetails{
     @NotNull
     String username;
 
+    @Column(nullable = false , unique = true)
+    @NotNull
+    String email;
+
     @Column(nullable = false)
     @NotNull
     String password;

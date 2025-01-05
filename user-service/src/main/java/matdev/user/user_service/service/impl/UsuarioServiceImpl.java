@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ public class UsuarioServiceImpl implements UsuarioService{
     private final UsuarioRepository usuarioRepository;
     private static final Logger LOGGER = Logger.getLogger(UsuarioServiceImpl.class.getName());
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
     @Override
     public UsuarioDto crearUsuario(RegisterRequest registerRequest) {
         LOGGER.info("Creando usuario");
@@ -32,6 +34,7 @@ public class UsuarioServiceImpl implements UsuarioService{
 
         try {
             Usuario usuario = convertRegisterRequestToEntity(registerRequest);
+            usuario.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
             usuario = usuarioRepository.save(usuario);
             LOGGER.info("Usuario creado con éxito con id: " + usuario.getId());
             return convertEntityToDto(usuario);

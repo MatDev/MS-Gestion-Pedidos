@@ -4,7 +4,8 @@ spring:
       server:
         git:
           uri: https://github.com/MatDev/MS-Gestion-Pedidos.git
-          search-paths: config-repo
+          search-paths:
+            - config-repo/user-service
           default-label: user-service
   application:
     name: config-server

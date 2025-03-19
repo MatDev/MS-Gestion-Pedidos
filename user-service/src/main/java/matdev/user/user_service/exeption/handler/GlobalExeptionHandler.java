@@ -21,6 +21,7 @@ import matdev.user.user_service.exeption.ExpireTokenException;
 import matdev.user.user_service.exeption.InternalServerErrorException;
 import matdev.user.user_service.exeption.NotFoundException;
 import matdev.user.user_service.exeption.PasswordIsNotEquals;
+import matdev.user.user_service.exeption.UnauthorizedUserException;
 
 @RestControllerAdvice
 public class GlobalExeptionHandler {
@@ -75,6 +76,12 @@ public class GlobalExeptionHandler {
     public ResponseEntity<ExceptionDTO> handleNotFoundException(NotFoundException ex, WebRequest request){
         LOGGER.error("Recurso no encontrado: "+ex.getMessage());
         return buildResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(UnauthorizedUserException.class)
+    public ResponseEntity<ExceptionDTO> handleUnauthorizedUserException(UnauthorizedUserException ex, WebRequest request){
+        LOGGER.error("Usuario no autorizado: "+ex.getMessage());
+        return buildResponseEntity(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
 

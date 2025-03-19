@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import matdev.user.user_service.dto.UsuarioDto;
 import matdev.user.user_service.dto.request.RegisterRequest;
@@ -41,7 +43,7 @@ public class UsuarioServiceImpl implements UsuarioService{
 
         } catch (Exception e) {
             LOGGER.severe("Error al crear usuario: " + e.getMessage());
-            throw new RuntimeException("Error al crear usuario");
+            throw new InternalServerErrorException("Error al crear usuario");
         }
     }
     @Override
@@ -54,11 +56,11 @@ public class UsuarioServiceImpl implements UsuarioService{
                 return Optional.of(convertEntityToDto(usuario.get()));
             } else {
                 LOGGER.info("Usuario no encontrado con email: " + email);
-                return Optional.empty();
+                throw new NotFoundException("Usuario no encontrado con email: " + email);
             }
         } catch (Exception e) {
             LOGGER.severe("Error al obtener usuario por email: " + e.getMessage());
-            throw new RuntimeException("Error al obtener usuario por email");
+            throw new InternalServerErrorException("Error al obtener usuario por email");
         }
     }
     @Override
@@ -71,11 +73,11 @@ public class UsuarioServiceImpl implements UsuarioService{
                 return Optional.of(convertEntityToDto(usuario.get()));
             } else {
                 LOGGER.info("Usuario no encontrado con id: " + id);
-                return Optional.empty();
+                throw new NotFoundException("Usuario no encontrado con id: " + id);
             }
         } catch (Exception e) {
             LOGGER.severe("Error al obtener usuario por id: " + e.getMessage());
-            throw new RuntimeException("Error al obtener usuario por id");
+            throw new InternalServerErrorException("Error al obtener usuario por id");
         }
     }
     @Override
@@ -87,7 +89,7 @@ public class UsuarioServiceImpl implements UsuarioService{
             LOGGER.info("Usuario eliminado con éxito con id: " + id);
         } catch (Exception e) {
             LOGGER.severe("Error al eliminar usuario por id: " + e.getMessage());
-            throw new RuntimeException("Error al eliminar usuario por id");
+            throw new InternalServerErrorException("Error al eliminar usuario por id");
         }
     }
     @Override
@@ -108,7 +110,7 @@ public class UsuarioServiceImpl implements UsuarioService{
             }
         } catch (Exception e) {
             LOGGER.severe("Error al actualizar usuario por id: " + e.getMessage());
-            throw new RuntimeException("Error al actualizar usuario por id");
+            throw new InternalServerErrorException("Error al actualizar usuario por id");
         }
     }
 

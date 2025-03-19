@@ -4,6 +4,8 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,6 +115,20 @@ public class UsuarioServiceImpl implements UsuarioService{
             throw new InternalServerErrorException("Error al actualizar usuario por id");
         }
     }
+    @Override
+    public Page<UsuarioDto> obtenerUsuarios(Pageable pageable) {
+        LOGGER.info("Obteniendo usuarios");
+        try {
+            Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
+            LOGGER.info("Usuarios encontrados con éxito");
+            return usuarios.map(this::convertEntityToDto);
+        } catch (Exception e) {
+            LOGGER.severe("Error al obtener usuarios: " + e.getMessage());
+            throw new InternalServerErrorException("Error al obtener usuarios");
+        }
+    }
+
+
 
     private UsuarioDto convertEntityToDto(Usuario usuario) {
         return modelMapper.map(usuario, UsuarioDto.class);

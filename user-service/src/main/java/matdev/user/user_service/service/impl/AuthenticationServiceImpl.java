@@ -83,7 +83,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
             tokenRepository.save(token);
         } catch (DataIntegrityViolationException e) {
             LOGGER.error("Error saving token for user with id: {}", usuario.getId());
-           Token exisToken=tokenRepository.findByToken(jwttoken).orElseThrow(()-> new RuntimeException("Token not found"));
+           Token exisToken=tokenRepository.findByAccessToken(jwttoken).orElseThrow(()-> new RuntimeException("Token not found"));
            exisToken.setExpired(false);
            exisToken.setRevoked(false);
            tokenRepository.save(exisToken);

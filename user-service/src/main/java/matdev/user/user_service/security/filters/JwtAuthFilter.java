@@ -78,7 +78,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
      private void processTokenAuthentication(HttpServletRequest request, String jwt, String userEmail) {
     UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-    boolean isTokenValid = tokenRepository.findByToken(jwt)
+    boolean isTokenValid = tokenRepository.findByAccessToken(jwt)
             .map(t -> !t.isExpired() && !t.isRevoked())
             .orElse(false);
 

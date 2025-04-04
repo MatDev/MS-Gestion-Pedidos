@@ -10,12 +10,11 @@ import matdev.user.user_service.entity.Token;
 
 public interface TokenRepository extends JpaRepository<Token, Long> {
     @Query("""
-        select t from Token t inner join User u
-        on t.user.id = u.id
-        where u.id = :userId and (t.expired = false or t.revoked = false)
+        SELECT t FROM Token t 
+        WHERE t.usuario.id = :userId AND (t.expired = false AND t.revoked = false)
         """)
     List< Token> findAllValidUserTokens(Long userId);
-    Optional <Token> findByToken(String token);
+    Optional <Token> findByAccessToken(String token);
 
 
 

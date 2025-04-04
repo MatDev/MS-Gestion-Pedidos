@@ -9,6 +9,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -24,15 +25,16 @@ import matdev.user.user_service.exeption.InvalidTokenException;
 import matdev.user.user_service.utils.constants.AuthConstant;
 
 @Service
+@ConfigurationProperties(prefix = "user-service.security.jwt")
 public class JwtService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtService.class);
 
-    @Value("${application.security.jwt.secret-key}")
+    @Value("${user-service.security.jwt.secret-key}")
     private String secretKey;
-    @Value("${application.security.jwt.expiration}")
+    @Value("${user-service.security.jwt.expiration}")
     private long jwtExpiration;
-    @Value("${application.security.jwt.refresh-token.expiration}")
+    @Value("${user-service.security.jwt.refresh-token.expiration}")
     private long refreshExpiration;
    
     //proceso de extraccion de claims
@@ -109,6 +111,12 @@ public class JwtService {
   private Date extractExpiration(String token) {
     return extractClaim(token, Claims::getExpiration);
   }
+
+
+  public String generateRefreshToken(UserDetails userDetails) {
+    return buildToken(new HashMap<>(), userDetails, refreshExpiration);
+  }
+
 
 
 

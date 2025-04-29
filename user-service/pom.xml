@@ -116,10 +116,12 @@
 			<version>1.0.2</version>
 		</dependency>
 		    <!-- Spring Batch -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-batch</artifactId>
-    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.springframework.batch/spring-batch-core -->
+	<dependency>
+		<groupId>org.springframework.batch</groupId>
+		<artifactId>spring-batch-core</artifactId>
+		<version>5.2.2</version>
+	</dependency>
 
 
 	</dependencies>

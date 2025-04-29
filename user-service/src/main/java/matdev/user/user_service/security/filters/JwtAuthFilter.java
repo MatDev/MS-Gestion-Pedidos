@@ -37,8 +37,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-       
-        LOGGER.debug("processing authentication for '{}'" + request.getRequestURL());
+
+       LOGGER.debug("processing authentication for '{}'", request.getRequestURL());
         if(isAuthPath(request)){
             filterChain.doFilter(request, response);
             return;
@@ -61,7 +61,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             handleException(response, e.getMessage(), HttpServletResponse.SC_UNAUTHORIZED);
             return;
         } catch (InvalidTokenException e) {
-            LOGGER.warn("Invalid token: {}"+ e.getMessage());
+            LOGGER.warn("Invalid token: {}", e.getMessage());
             handleException(response, e.getMessage(), HttpServletResponse.SC_BAD_REQUEST);
             return;
         }

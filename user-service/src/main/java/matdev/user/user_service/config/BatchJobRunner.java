@@ -20,7 +20,7 @@ public class BatchJobRunner implements CommandLineRunner {
 private final JobLauncher jobLauncher;
 private final Job populateDatabaseJob;
 private final UsuarioRepository usuarioRepository;
-private static final Logger LOGGER = LoggerFactory.getLogger(BatchConfig.class);
+private static final Logger LOGGER = LoggerFactory.getLogger(BatchJobRunner.class);
 
     @Override
     public void run(String... args) throws Exception {
@@ -35,6 +35,6 @@ private static final Logger LOGGER = LoggerFactory.getLogger(BatchConfig.class);
     public void cleanUp() {
         LOGGER.info("Cleaning up database after batch job");
         usuarioRepository.deleteAll();
-        System.out.println("Database cleaned up");
+        LOGGER.info("Database cleaned up");
     }
 }

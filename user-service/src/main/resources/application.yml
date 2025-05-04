@@ -4,8 +4,5 @@ spring:
   cloud:
     config:
       fail-fast: true
-  profile:
-    active: dev
   config:
     import: configserver:http://localhost:8889
-

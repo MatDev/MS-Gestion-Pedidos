@@ -3,6 +3,11 @@ package matdev.user.user_service.service.impl;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import matdev.user.user_service.exeption.InternalServerErrorException;
+import matdev.user.user_service.exeption.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.NotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import matdev.user.user_service.dto.UsuarioDto;
 import matdev.user.user_service.dto.request.RegisterRequest;
@@ -19,9 +23,11 @@ import matdev.user.user_service.entity.Usuario;
 import matdev.user.user_service.exeption.PasswordIsNotEquals;
 import matdev.user.user_service.repository.UsuarioRepository;
 import matdev.user.user_service.service.UsuarioService;
+import org.springframework.validation.annotation.Validated;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class UsuarioServiceImpl implements UsuarioService{ 
     private final UsuarioRepository usuarioRepository;
     private static final Logger LOGGER = Logger.getLogger(UsuarioServiceImpl.class.getName());
@@ -49,7 +55,10 @@ public class UsuarioServiceImpl implements UsuarioService{
         }
     }
     @Override
-    public Optional<UsuarioDto> obtenerUsuarioPorEmail(String email) {
+    public Optional<UsuarioDto> obtenerUsuarioPorEmail(
+            @NotNull(message ="El email no puede ser null")
+            @Email(message ="Formato de email invalido ")
+            @NotEmpty(message ="Email no puede ser vacio") final String email) {
         LOGGER.info("Obteniendo usuario por email: " + email);
         try {
             Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
@@ -66,7 +75,7 @@ public class UsuarioServiceImpl implements UsuarioService{
         }
     }
     @Override
-    public Optional<UsuarioDto> obtenerUsuarioPorId(Long id) {
+    public Optional<UsuarioDto> obtenerUsuarioPorId(@NotNull final Long id) {
         LOGGER.info("Obteniendo usuario por id: " + id);
         try {
             Optional<Usuario> usuario = usuarioRepository.findById(id);
@@ -84,36 +93,24 @@ public class UsuarioServiceImpl implements UsuarioService{
     }
     @Override
     @Transactional
-    public void eliminarUsuarioPorId(Long id) {
+    public void eliminarUsuarioPorId(@NotNull final Long id) {
         LOGGER.info("Eliminando usuario por id: " + id);
-        try {
-            usuarioRepository.deleteById(id);
-            LOGGER.info("Usuario eliminado con éxito con id: " + id);
-        } catch (Exception e) {
-            LOGGER.severe("Error al eliminar usuario por id: " + e.getMessage());
-            throw new InternalServerErrorException("Error al eliminar usuario por id");
-        }
+        getUsuarioByIdHelper(id);
+        usuarioRepository.deleteById(id);
+        LOGGER.info("Usuario eliminado con éxito con id: " + id);
     }
     @Override
-    public UsuarioDto actualizarUsuario(Long id, UsuarioDto usuario) {
+    public UsuarioDto actualizarUsuario(@NotNull final Long id, @NotNull final UsuarioDto usuario) {
         LOGGER.info("Actualizando usuario por id: " + id);
-        try {
-            Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
-            if (usuarioOptional.isPresent()) {
-                Usuario usuarioEntity = usuarioOptional.get();
-                usuarioEntity.setEmail(usuario.getEmail());
-                usuarioEntity.setRole(usuario.getRole());
-                usuarioEntity = usuarioRepository.save(usuarioEntity);
-                LOGGER.info("Usuario actualizado con éxito con id: " + usuarioEntity.getId());
-                return convertEntityToDto(usuarioEntity);
-            } else {
-                LOGGER.info("Usuario no encontrado con id: " + id);
-                return null;
-            }
-        } catch (Exception e) {
-            LOGGER.severe("Error al actualizar usuario por id: " + e.getMessage());
-            throw new InternalServerErrorException("Error al actualizar usuario por id");
-        }
+        getUsuarioByIdHelper(id);
+        Usuario usuarioEntity = modelMapper.map(usuario, Usuario.class);
+        usuarioEntity.setId(id);
+        usuarioEntity.setUsername(usuario.getUsername());
+        usuarioEntity.setEmail(usuario.getEmail());
+        usuarioEntity = usuarioRepository.save(usuarioEntity);
+        LOGGER.info("Usuario actualizado con éxito con id: " + usuarioEntity.getId());
+        return convertEntityToDto(usuarioEntity);
+
     }
     @Override
     public Page<UsuarioDto> obtenerUsuarios(Pageable pageable) {
@@ -129,6 +126,13 @@ public class UsuarioServiceImpl implements UsuarioService{
     }
 
 
+    private  Usuario getUsuarioByIdHelper(@NotNull Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> {
+                    LOGGER.warning("Usuario no encontrado con id: {}  " + id);
+                   return new NotFoundException("Usuario no encontrado");
+                });
+    }
 
     private UsuarioDto convertEntityToDto(Usuario usuario) {
         return modelMapper.map(usuario, UsuarioDto.class);

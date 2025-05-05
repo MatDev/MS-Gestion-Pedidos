@@ -8,3 +8,6 @@ spring:
       fail-fast: true
   config:
     import: configserver:http://localhost:8889
+
+debug: true
+

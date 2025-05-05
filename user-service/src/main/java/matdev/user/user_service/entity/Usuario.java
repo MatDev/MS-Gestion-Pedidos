@@ -3,6 +3,8 @@ package matdev.user.user_service.entity;
 import java.util.Collection;
 import java.util.Collections;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -35,11 +37,13 @@ public class Usuario implements UserDetails{
     Long id;
 
     @Column(nullable = false , unique = true)
-    @NotNull
+    @NotNull(message = "Username cannot be null")
+    @Size(min=4 ,max =30,message ="El usuername debe tener entre {min} y {max} caracteres")
     String username;
 
     @Column(nullable = false , unique = true)
-    @NotNull
+    @NotNull(message = "Email cannot be null")
+    @Email(message = "Email should be valid")
     String email;
 
     @Column(nullable = false)
@@ -47,6 +51,7 @@ public class Usuario implements UserDetails{
     String password;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private Role role;
 
 

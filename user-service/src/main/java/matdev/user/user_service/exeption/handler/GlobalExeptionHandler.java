@@ -4,6 +4,8 @@ package matdev.user.user_service.exeption.handler;
 
 
 
+import jakarta.validation.ConstraintViolationException;
+import matdev.user.user_service.exeption.*;
 import org.slf4j.Logger;
 
 import org.springframework.http.HttpStatus;
@@ -13,16 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-
-import matdev.user.user_service.exeption.AppException;
-import matdev.user.user_service.exeption.BadRequestException;
-import matdev.user.user_service.exeption.ExceptionDTO;
-import matdev.user.user_service.exeption.ExpireTokenException;
-import matdev.user.user_service.exeption.InternalServerErrorException;
-import matdev.user.user_service.exeption.InvalidTokenException;
-import matdev.user.user_service.exeption.NotFoundException;
-import matdev.user.user_service.exeption.PasswordIsNotEquals;
-import matdev.user.user_service.exeption.UnauthorizedUserException;
 
 @RestControllerAdvice
 public class GlobalExeptionHandler {
@@ -89,6 +81,12 @@ public class GlobalExeptionHandler {
     public ResponseEntity<ExceptionDTO> handleInvalidTokenException(InvalidTokenException ex, WebRequest request){
         LOGGER.error("Token inválido:  {} ",ex.getMessage());
         return buildResponseEntity(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ExceptionDTO> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request){
+        LOGGER.error("Error de validación: {} ",ex.getMessage());
+        return buildResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
 

@@ -24,6 +24,7 @@ jobs:
 
       - name: Compilar y test con Maven + cobertura
         run: mvn clean verify
+        working-directory: user-service
 
       - name: Subir reporte Jacoco
         uses: actions/upload-artifact@v4
@@ -34,10 +35,11 @@ jobs:
       - name: Analizar con SonarCloud
         run: |
           mvn sonar:sonar \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.projectKey=MatDev_MS-Gestion-Pedidos \
-          -Dsonar.projectName=MS-Gestion-Pedidos
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.projectKey=MatDev_MS-Gestion-Pedidos \
+            -Dsonar.projectName=MS-Gestion-Pedidos
+        working-directory: user-service
 
       - name: SonarCloud Quality Gate
         id: sonarcloud-check
@@ -62,5 +64,6 @@ jobs:
           docker build -t user-service -f user-service/Dockerfile ./user-service
           docker tag user-service:latest ${{ secrets.DOCKER_USERNAME }}/user-service:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/user-service:latest
+
 
 

@@ -25,7 +25,7 @@ spring:
 user-service:
   security:
     jwt:
-      secret-key: ${JWT_SECRET_KEYadef760a77fd57aebbc322ad744ee640e35f32e5d304eccbac7810f7f6013721bac35e0261cd854860e5b432b0cf59e3c34260efafb16f18a802d9da4370ab3b}
+      secret-key: ${JWT_SECRET_KEY:adef760a77fd57aebbc322ad744ee640e35f32e5d304eccbac7810f7f6013721bac35e0261cd854860e5b432b0cf59e3c34260efafb16f18a802d9da4370ab3b}
       expiration: ${JWT_ACCESS_EXPIRATION:400000000}
       refresh-token:
         expiration: ${JWT_REFRESH_EXPIRATION:40000000000}

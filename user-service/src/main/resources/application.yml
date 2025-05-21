@@ -1,8 +1,13 @@
 spring:
   application:
     name: user-service
+  profiles:
+    active: dev
   cloud:
     config:
       fail-fast: true
   config:
     import: configserver:http://localhost:8889
+
+debug: true
+

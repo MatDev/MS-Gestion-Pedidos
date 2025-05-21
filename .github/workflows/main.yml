@@ -26,7 +26,7 @@ jobs:
         run: mvn clean verify
 
       - name: Subir reporte Jacoco
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
           path: user-service/target/site/jacoco/index.html

@@ -38,7 +38,8 @@ jobs:
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.projectKey=MatDev_MS-Gestion-Pedidos \
-            -Dsonar.projectName=MS-Gestion-Pedidos
+            -Dsonar.projectName=MS-Gestion-Pedidos \
+            -Dsonar.organization=matdev
         working-directory: user-service
 
       - name: SonarCloud Quality Gate

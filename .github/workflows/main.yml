@@ -42,14 +42,13 @@ jobs:
             -Dsonar.organization=matdev
         working-directory: user-service
 
-      - name: SonarCloud Quality Gate
-        id: sonarcloud-check
+      - name: SonarCloud Analysis + Quality Gate
         uses: sonarsource/sonarcloud-github-action@v3
+        with:
+          projectBaseDir: user-service
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
-        with:
-          scanMetadataReportFile: user-service/target/sonar/report-task.txt
+
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3

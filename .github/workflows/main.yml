@@ -34,21 +34,13 @@ jobs:
 
       - name: Analizar con SonarCloud
         run: |
-          mvn sonar:sonar \
+          mvn clean verify sonar:sonar \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.projectKey=MatDev_MS-Gestion-Pedidos \
             -Dsonar.projectName=MS-Gestion-Pedidos \
             -Dsonar.organization=matdev
         working-directory: user-service
-
-      - name: SonarCloud Analysis + Quality Gate
-        uses: sonarsource/sonarcloud-github-action@v3
-        with:
-          projectBaseDir: user-service
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3

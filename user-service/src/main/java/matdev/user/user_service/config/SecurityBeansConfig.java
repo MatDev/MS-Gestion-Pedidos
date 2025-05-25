@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 
+import matdev.user.user_service.security.provider.TenantAuthenticationProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,18 +34,11 @@ public class SecurityBeansConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean 
-    public UserDetailsService userDetailsService(){
-        return  username -> usuarioRepository.findByEmail(username)
-        .orElseThrow(()-> new UsernameNotFoundException("User not found"));
-    }
+
 
     @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService){
-       DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-       authProvider.setUserDetailsService(userDetailsService);
-         authProvider.setPasswordEncoder(passwordEncoder());
-         return authProvider;
+    public AuthenticationProvider authenticationProvider() {
+        return new TenantAuthenticationProvider(usuarioRepository, passwordEncoder());
     }
 
     

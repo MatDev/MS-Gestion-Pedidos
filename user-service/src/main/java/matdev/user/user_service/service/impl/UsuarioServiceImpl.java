@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import matdev.user.user_service.context.TenantContext;
 import matdev.user.user_service.exeption.InternalServerErrorException;
 import matdev.user.user_service.exeption.NotFoundException;
 import org.modelmapper.ModelMapper;
@@ -28,15 +29,16 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @RequiredArgsConstructor
 @Validated
-public class UsuarioServiceImpl implements UsuarioService{ 
+public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private static final Logger LOGGER = Logger.getLogger(UsuarioServiceImpl.class.getName());
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+
     @Override
     public UsuarioDto crearUsuario(RegisterRequest registerRequest) {
         LOGGER.info("Creando usuario");
-        
+
         if (isNotEquealPassword(registerRequest.getPassword(), registerRequest.getConfirmPassword())) {
             LOGGER.severe("Error al crear usuario: Las contraseñas no coinciden");
             throw new PasswordIsNotEquals("Las contraseñas no coinciden");
@@ -54,43 +56,46 @@ public class UsuarioServiceImpl implements UsuarioService{
             throw new InternalServerErrorException("Error al crear usuario");
         }
     }
+
     @Override
     public Optional<UsuarioDto> obtenerUsuarioPorEmail(
             @NotNull(message ="El email no puede ser null")
             @Email(message ="Formato de email invalido ")
             @NotEmpty(message ="Email no puede ser vacio") final String email) {
         LOGGER.info("Obteniendo usuario por email: " + email);
+        String tenantId = TenantContext.getTenantId();
+
         try {
-            Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
-            if (usuario.isPresent()) {
-                LOGGER.info("Usuario encontrado con éxito con id: " + usuario.get().getId());
-                return Optional.of(convertEntityToDto(usuario.get()));
-            } else {
-                LOGGER.info("Usuario no encontrado con email: " + email);
-                throw new NotFoundException("Usuario no encontrado con email: " + email);
-            }
+            Usuario usuario = usuarioRepository.findByEmailAndTenantId(email, tenantId)
+                    .orElseThrow(() -> new NotFoundException("Usuario no encontrado con email: " + email));
+
+            LOGGER.info("Usuario encontrado con éxito con id: " + usuario.getId());
+            return Optional.of(convertEntityToDto(usuario));
+
         } catch (Exception e) {
             LOGGER.severe("Error al obtener usuario por email: " + e.getMessage());
             throw new InternalServerErrorException("Error al obtener usuario por email");
         }
     }
+
     @Override
     public Optional<UsuarioDto> obtenerUsuarioPorId(@NotNull final Long id) {
         LOGGER.info("Obteniendo usuario por id: " + id);
+        String tenantId = TenantContext.getTenantId();
+
         try {
-            Optional<Usuario> usuario = usuarioRepository.findById(id);
-            if (usuario.isPresent()) {
-                LOGGER.info("Usuario encontrado con éxito con id: " + usuario.get().getId());
-                return Optional.of(convertEntityToDto(usuario.get()));
-            } else {
-                LOGGER.info("Usuario no encontrado con id: " + id);
-                throw new NotFoundException("Usuario no encontrado con id: " + id);
-            }
+            Usuario usuario = usuarioRepository.findByIdAndTenantId(id, tenantId)
+                    .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id: " + id));
+
+            LOGGER.info("Usuario encontrado con éxito con id: " + usuario.getId());
+            return Optional.of(convertEntityToDto(usuario));
+
         } catch (Exception e) {
             LOGGER.severe("Error al obtener usuario por id: " + e.getMessage());
             throw new InternalServerErrorException("Error al obtener usuario por id");
         }
     }
+
     @Override
     @Transactional
     public void eliminarUsuarioPorId(@NotNull final Long id) {
@@ -99,6 +104,7 @@ public class UsuarioServiceImpl implements UsuarioService{
         usuarioRepository.deleteById(id);
         LOGGER.info("Usuario eliminado con éxito con id: " + id);
     }
+
     @Override
     public UsuarioDto actualizarUsuario(@NotNull final Long id, @NotNull final UsuarioDto usuario) {
         LOGGER.info("Actualizando usuario por id: " + id);
@@ -110,27 +116,30 @@ public class UsuarioServiceImpl implements UsuarioService{
         usuarioEntity = usuarioRepository.save(usuarioEntity);
         LOGGER.info("Usuario actualizado con éxito con id: " + usuarioEntity.getId());
         return convertEntityToDto(usuarioEntity);
-
     }
+
     @Override
     public Page<UsuarioDto> obtenerUsuarios(Pageable pageable) {
         LOGGER.info("Obteniendo usuarios");
+        String tenantId = TenantContext.getTenantId();
+
         try {
-            Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
+            Page<Usuario> usuarios = usuarioRepository.findAllByTenantId(tenantId, pageable);
             LOGGER.info("Usuarios encontrados con éxito");
             return usuarios.map(this::convertEntityToDto);
+
         } catch (Exception e) {
             LOGGER.severe("Error al obtener usuarios: " + e.getMessage());
             throw new InternalServerErrorException("Error al obtener usuarios");
         }
     }
 
-
-    private  Usuario getUsuarioByIdHelper(@NotNull Long id) {
-        return usuarioRepository.findById(id)
+    private Usuario getUsuarioByIdHelper(@NotNull Long id) {
+        String tenantId = TenantContext.getTenantId();
+        return usuarioRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> {
                     LOGGER.warning("Usuario no encontrado con id: {}  " + id);
-                   return new NotFoundException("Usuario no encontrado");
+                    return new NotFoundException("Usuario no encontrado");
                 });
     }
 
@@ -138,13 +147,10 @@ public class UsuarioServiceImpl implements UsuarioService{
         return modelMapper.map(usuario, UsuarioDto.class);
     }
 
-
-
     private boolean isNotEquealPassword(String password, String confirmPassword) {
         return !password.equals(confirmPassword);
     }
 
-    // mapeo solo los componentes que se necesitan para la creación de un usuario
     private Usuario convertRegisterRequestToEntity(RegisterRequest registerRequest) {
         Usuario usuario = new Usuario();
         usuario.setEmail(registerRequest.getEmail());
@@ -154,9 +160,5 @@ public class UsuarioServiceImpl implements UsuarioService{
         usuario.setTenantId(registerRequest.getTenantId());
         return usuario;
     }
-
-   
-
-
-
 }
+

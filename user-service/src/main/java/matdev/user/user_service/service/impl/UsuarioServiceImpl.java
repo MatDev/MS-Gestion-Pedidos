@@ -1,7 +1,8 @@
 package matdev.user.user_service.service.impl;
 
 import java.util.Optional;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -31,7 +32,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
-    private static final Logger LOGGER = Logger.getLogger(UsuarioServiceImpl.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioServiceImpl.class);
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -40,7 +41,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         LOGGER.info("Creando usuario");
 
         if (isNotEquealPassword(registerRequest.getPassword(), registerRequest.getConfirmPassword())) {
-            LOGGER.severe("Error al crear usuario: Las contraseñas no coinciden");
+            LOGGER.error("Error al crear usuario: Las contraseñas no coinciden");
             throw new PasswordIsNotEquals("Las contraseñas no coinciden");
         }
 
@@ -48,11 +49,11 @@ public class UsuarioServiceImpl implements UsuarioService {
             Usuario usuario = convertRegisterRequestToEntity(registerRequest);
             usuario.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
             usuario = usuarioRepository.save(usuario);
-            LOGGER.info("Usuario creado con éxito con id: " + usuario.getId());
+            LOGGER.info("Usuario creado con éxito con id: {}" , usuario.getId());
             return convertEntityToDto(usuario);
 
         } catch (Exception e) {
-            LOGGER.severe("Error al crear usuario: " + e.getMessage());
+            LOGGER.error("Error al crear usuario: {}", e.getMessage());
             throw new InternalServerErrorException("Error al crear usuario");
         }
     }
@@ -62,36 +63,36 @@ public class UsuarioServiceImpl implements UsuarioService {
             @NotNull(message ="El email no puede ser null")
             @Email(message ="Formato de email invalido ")
             @NotEmpty(message ="Email no puede ser vacio") final String email) {
-        LOGGER.info("Obteniendo usuario por email: " + email);
+        LOGGER.info("Obteniendo usuario por email:{}", email);
         String tenantId = TenantContext.getTenantId();
 
         try {
             Usuario usuario = usuarioRepository.findByEmailAndTenantId(email, tenantId)
                     .orElseThrow(() -> new NotFoundException("Usuario no encontrado con email: " + email));
 
-            LOGGER.info("Usuario encontrado con éxito con id: " + usuario.getId());
+            LOGGER.info("Usuario encontrado con éxito con id: {} " , usuario.getId());
             return Optional.of(convertEntityToDto(usuario));
 
         } catch (Exception e) {
-            LOGGER.severe("Error al obtener usuario por email: " + e.getMessage());
+            LOGGER.error("Error al obtener usuario por email: {} " , e.getMessage());
             throw new InternalServerErrorException("Error al obtener usuario por email");
         }
     }
 
     @Override
     public Optional<UsuarioDto> obtenerUsuarioPorId(@NotNull final Long id) {
-        LOGGER.info("Obteniendo usuario por id: " + id);
+        LOGGER.info("Obteniendo usuario por id: {}" , id);
         String tenantId = TenantContext.getTenantId();
 
         try {
             Usuario usuario = usuarioRepository.findByIdAndTenantId(id, tenantId)
                     .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id: " + id));
 
-            LOGGER.info("Usuario encontrado con éxito con id: " + usuario.getId());
+            LOGGER.info("Usuario encontrado con éxito con id: {}" , usuario.getId());
             return Optional.of(convertEntityToDto(usuario));
 
         } catch (Exception e) {
-            LOGGER.severe("Error al obtener usuario por id: " + e.getMessage());
+            LOGGER.error("Error al obtener usuario por id: {}" , e.getMessage());
             throw new InternalServerErrorException("Error al obtener usuario por id");
         }
     }
@@ -99,22 +100,22 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public void eliminarUsuarioPorId(@NotNull final Long id) {
-        LOGGER.info("Eliminando usuario por id: " + id);
+        LOGGER.info("Eliminando usuario por id: {} ", id);
         getUsuarioByIdHelper(id);
         usuarioRepository.deleteById(id);
-        LOGGER.info("Usuario eliminado con éxito con id: " + id);
+        LOGGER.info("Usuario eliminado con éxito con id: {}" , id);
     }
 
     @Override
     public UsuarioDto actualizarUsuario(@NotNull final Long id, @NotNull final UsuarioDto usuario) {
-        LOGGER.info("Actualizando usuario por id: " + id);
+        LOGGER.info("Actualizando usuario por id: {} " , id);
         getUsuarioByIdHelper(id);
         Usuario usuarioEntity = modelMapper.map(usuario, Usuario.class);
         usuarioEntity.setId(id);
         usuarioEntity.setUsername(usuario.getUsername());
         usuarioEntity.setEmail(usuario.getEmail());
         usuarioEntity = usuarioRepository.save(usuarioEntity);
-        LOGGER.info("Usuario actualizado con éxito con id: " + usuarioEntity.getId());
+        LOGGER.info("Usuario actualizado con éxito con id: {} " , usuarioEntity.getId());
         return convertEntityToDto(usuarioEntity);
     }
 
@@ -129,7 +130,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             return usuarios.map(this::convertEntityToDto);
 
         } catch (Exception e) {
-            LOGGER.severe("Error al obtener usuarios: " + e.getMessage());
+            LOGGER.error("Error al obtener usuarios: {}" , e.getMessage());
             throw new InternalServerErrorException("Error al obtener usuarios");
         }
     }
@@ -138,7 +139,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         String tenantId = TenantContext.getTenantId();
         return usuarioRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> {
-                    LOGGER.warning("Usuario no encontrado con id: {}  " + id);
+                    LOGGER.warn("Usuario no encontrado con id: {}  " , id);
                     return new NotFoundException("Usuario no encontrado");
                 });
     }

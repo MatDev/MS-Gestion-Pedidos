@@ -57,12 +57,14 @@ class UserServiceApplicationTests {
 		request.setEmail("admin@admin.com");
 		request.setPassword("password");
 		request.setConfirmPassword("password");
+		request.setTenantId("tenant-test");
 
 		// Crear un Usuario para el resultado simulado
 		Usuario usuarioResultado = new Usuario();
 		usuarioResultado.setUsername("testuser");
 		usuarioResultado.setEmail("admin@admin.com");
 		usuarioResultado.setPassword("encodedPassword");
+		usuarioResultado.setTenantId("tenant-test");
 
 		when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
 		when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioResultado);
@@ -86,6 +88,7 @@ class UserServiceApplicationTests {
 		request.setUsername("testuser");
 		request.setEmail("admin@admin.com");
 		request.setPassword("password");
+		request.setTenantId("tenant-test");
 		request.setConfirmPassword("password12");
 
 		assertThrows(PasswordIsNotEquals.class,()-> {
@@ -100,7 +103,9 @@ class UserServiceApplicationTests {
 		request.setUsername("testuser");
 		request.setEmail("test@example.com");
 		request.setPassword("password123");
+		request.setTenantId("tenant-test");
 		request.setConfirmPassword("password123");
+
 
 
 		// configura el mock para lanzar una exception

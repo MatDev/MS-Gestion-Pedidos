@@ -1,6 +1,7 @@
 package matdev.user.user_service;
 
 
+import matdev.user.user_service.context.TenantContext;
 import matdev.user.user_service.dto.request.RegisterRequest;
 import matdev.user.user_service.entity.Usuario;
 import matdev.user.user_service.exeption.InternalServerErrorException;
@@ -32,6 +33,7 @@ import matdev.user.user_service.dto.UsuarioDto;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceApplicationTests {
@@ -51,7 +53,6 @@ class UserServiceApplicationTests {
 
 	@Test
 	void testCreateCorrectUser() {
-		// Crear un RegisterRequest
 		RegisterRequest request = new RegisterRequest();
 		request.setUsername("testuser");
 		request.setEmail("admin@admin.com");
@@ -59,7 +60,6 @@ class UserServiceApplicationTests {
 		request.setConfirmPassword("password");
 		request.setTenantId("tenant-test");
 
-		// Crear un Usuario para el resultado simulado
 		Usuario usuarioResultado = new Usuario();
 		usuarioResultado.setUsername("testuser");
 		usuarioResultado.setEmail("admin@admin.com");
@@ -75,60 +75,49 @@ class UserServiceApplicationTests {
 			return dto;
 		});
 
-		// Llamar al método con el RegisterRequest
 		UsuarioDto createdUsuario = usuarioService.crearUsuario(request);
 		assertThat(createdUsuario.getEmail()).isEqualTo("admin@admin.com");
 		verify(usuarioRepository).save(any(Usuario.class));
-
 	}
 
 	@Test
-	void testCreateUserWhitPasswordNotEquals(){
+	void testCreateUserWhitPasswordNotEquals() {
 		RegisterRequest request = new RegisterRequest();
 		request.setUsername("testuser");
 		request.setEmail("admin@admin.com");
 		request.setPassword("password");
-		request.setTenantId("tenant-test");
 		request.setConfirmPassword("password12");
+		request.setTenantId("tenant-test");
 
-		assertThrows(PasswordIsNotEquals.class,()-> {
-			usuarioService.crearUsuario(request);
-		});
-
+		assertThrows(PasswordIsNotEquals.class, () -> usuarioService.crearUsuario(request));
 	}
 
 	@Test
-	void testCreateUserErrorRepository(){
+	void testCreateUserErrorRepository() {
 		RegisterRequest request = new RegisterRequest();
 		request.setUsername("testuser");
 		request.setEmail("test@example.com");
 		request.setPassword("password123");
-		request.setTenantId("tenant-test");
 		request.setConfirmPassword("password123");
+		request.setTenantId("tenant-test");
 
-
-
-		// configura el mock para lanzar una exception
 		when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
-		when(usuarioRepository.save(any(Usuario.class))).thenThrow(new InternalServerErrorException("Error al guardar el usuario"));
+		when(usuarioRepository.save(any(Usuario.class)))
+				.thenThrow(new InternalServerErrorException("Error al guardar el usuario"));
 
-		assertThrows(InternalServerErrorException.class,()->{
-			usuarioService.crearUsuario(request);
-		});
-
+		assertThrows(InternalServerErrorException.class, () -> usuarioService.crearUsuario(request));
 	}
-
 	@Test
-	void   testGetUsuarioPorEmail() {
-		// Crear un Usuario simulado
+	void testGetUsuarioPorEmail() {
+		TenantContext.setTenantId("tenant-test");
+
 		Usuario usuario = new Usuario();
 		usuario.setEmail("admin@admin.com");
-		usuario.setPassword("password");
 		usuario.setId(1L);
 
-		// Configurar el comportamiento simulado del repositorio
-		when(usuarioRepository.findByEmail("admin@admin.com")).thenReturn(java.util.Optional.of(usuario));
-		when(modelMapper.map(usuario, UsuarioDto.class)).thenReturn(new UsuarioDto());
+		when(usuarioRepository.findByEmailAndTenantId("admin@admin.com", "tenant-test"))
+				.thenReturn(Optional.of(usuario));
+
 		when(modelMapper.map(usuario, UsuarioDto.class)).thenAnswer(invocation -> {
 			Usuario user = invocation.getArgument(0);
 			UsuarioDto dto = new UsuarioDto();
@@ -136,49 +125,53 @@ class UserServiceApplicationTests {
 			dto.setId(user.getId());
 			return dto;
 		});
-		// Llamar al método
+
 		UsuarioDto usuarioDto = usuarioService.obtenerUsuarioPorEmail("admin@admin.com").orElse(null);
 		assertThat(usuarioDto).isNotNull();
 		assertThat(usuarioDto.getEmail()).isEqualTo("admin@admin.com");
-		verify(usuarioRepository).findByEmail("admin@admin.com");
-
+		verify(usuarioRepository).findByEmailAndTenantId("admin@admin.com", "tenant-test");
 	}
+
 	@Test
 	void GetUsuarioPorEmailNotfound() {
-		// Configurar el comportamiento simulado del repositorio
-		when(usuarioRepository.findByEmail("admin@admin.com")).thenReturn(java.util.Optional.empty());
-		//verificamos que se lance la exception
-		assertThrows(InternalServerErrorException.class, () ->{
-			usuarioService.obtenerUsuarioPorEmail("admin@admin.com");
-		});
-		// Llamar al método
-		verify(usuarioRepository).findByEmail("admin@admin.com");
+		TenantContext.setTenantId("tenant-test");
 
+		when(usuarioRepository.findByEmailAndTenantId("admin@admin.com", "tenant-test"))
+				.thenReturn(Optional.empty());
+
+		assertThrows(InternalServerErrorException.class, () ->
+				usuarioService.obtenerUsuarioPorEmail("admin@admin.com")
+		);
+
+		verify(usuarioRepository).findByEmailAndTenantId("admin@admin.com", "tenant-test");
 	}
 
 	@Test
-	void testUserWhitExceptionFindEmail(){
-		String email = "admin@admin.com";
-		//Configurar el mock para lanzar una exception
-		when(usuarioRepository.findByEmail(email)).thenThrow(new InternalServerErrorException("Error al buscar el usuario por email"));
-		// se verifica que se lance la exception
-		assertThrows(InternalServerErrorException.class, () -> {
-			usuarioService.obtenerUsuarioPorEmail(email);
-		});
+	void testUserWhitExceptionFindEmail() {
+		TenantContext.setTenantId("tenant-test");
 
-		// Verificar que el método findByEmail fue llamado
-		verify(usuarioRepository).findByEmail(email);
+		when(usuarioRepository.findByEmailAndTenantId("admin@admin.com", "tenant-test"))
+				.thenThrow(new InternalServerErrorException("Error"));
+
+		assertThrows(InternalServerErrorException.class, () ->
+				usuarioService.obtenerUsuarioPorEmail("admin@admin.com")
+		);
+
+		verify(usuarioRepository).findByEmailAndTenantId("admin@admin.com", "tenant-test");
 	}
 
+
 	@Test
-	void testGetUsuarioPotId(){
-		// Crea el usuario simulado
+	void testGetUsuarioPotId() {
+		TenantContext.setTenantId("tenant-test");
+
 		Usuario usuario = new Usuario();
 		usuario.setId(1L);
 		usuario.setEmail("admin@admin.cl");
-		usuario.setPassword("password");
-		// Configura el comportamiento simulado del repositorio
-		when(usuarioRepository.findById(1L)).thenReturn(java.util.Optional.of(usuario));
+
+		when(usuarioRepository.findByIdAndTenantId(1L, "tenant-test"))
+				.thenReturn(Optional.of(usuario));
+
 		when(modelMapper.map(usuario, UsuarioDto.class)).thenAnswer(invocation -> {
 			Usuario user = invocation.getArgument(0);
 			UsuarioDto dto = new UsuarioDto();
@@ -186,48 +179,49 @@ class UserServiceApplicationTests {
 			dto.setId(user.getId());
 			return dto;
 		});
-		// Llama al método
+
 		UsuarioDto usuarioDto = usuarioService.obtenerUsuarioPorId(1L).orElse(null);
 		assertThat(usuarioDto).isNotNull();
 		assertThat(usuarioDto.getEmail()).isEqualTo("admin@admin.cl");
-		verify(usuarioRepository).findById(1L);
-
+		verify(usuarioRepository).findByIdAndTenantId(1L, "tenant-test");
 	}
 
 	@Test
 	void testGetUsuarioPorIdNotFound() {
-		// Configurar el comportamiento simulado del repositorio
-		when(usuarioRepository.findById(1L)).thenReturn(java.util.Optional.empty());
-		//verificamos que se lance la exception
-		assertThrows(InternalServerErrorException.class, () ->{
+		TenantContext.setTenantId("tenant-test");
+		when(usuarioRepository.findByIdAndTenantId(1L, "tenant-test")).thenReturn(Optional.empty());
+
+		assertThrows(InternalServerErrorException.class, () -> {
 			usuarioService.obtenerUsuarioPorId(1L);
 		});
-		// Llamar al método
-		verify(usuarioRepository).findById(1L);
 
+		verify(usuarioRepository).findByIdAndTenantId(1L, "tenant-test");
 	}
+
 
 	@Test
 	void testGetUsuarioPorIdWhitException() {
+		TenantContext.setTenantId("tenant-test");
 		Long id = 1L;
-		//Configurar el mock para lanzar una exception
-		when(usuarioRepository.findById(id)).thenThrow(new InternalServerErrorException("Error al buscar el usuario por id"));
-		// se verifica que se lance la exception
+		when(usuarioRepository.findByIdAndTenantId(id, "tenant-test"))
+				.thenThrow(new InternalServerErrorException("Error"));
+
 		assertThrows(InternalServerErrorException.class, () -> {
 			usuarioService.obtenerUsuarioPorId(id);
 		});
 
-		// Verificar que el método findById fue llamado
-		verify(usuarioRepository).findById(id);
+		verify(usuarioRepository).findByIdAndTenantId(id, "tenant-test");
 	}
 
 	@Test
 	void testDeleteUsuarioPorId() {
+		TenantContext.setTenantId("tenant-test");
 		Long id = 1L;
-		// Configurar que el usuario existe
-		when(usuarioRepository.findById(id)).thenReturn(java.util.Optional.of(new Usuario()));
-		// Llamar al método
+		when(usuarioRepository.findByIdAndTenantId(id, "tenant-test"))
+				.thenReturn(Optional.of(new Usuario()));
+
 		usuarioService.eliminarUsuarioPorId(id);
+
 		verify(usuarioRepository).deleteById(id);
 	}
 
@@ -249,86 +243,82 @@ class UserServiceApplicationTests {
 
 	@Test
 	void testDeleteUsuarioPorIdWhitException() {
+		TenantContext.setTenantId("tenant-test");
 		Long id = 1L;
-		// Simular que el usuario existe
-		when(usuarioRepository.findById(id)).thenReturn(java.util.Optional.of(new Usuario()));
+		when(usuarioRepository.findByIdAndTenantId(id, "tenant-test"))
+				.thenReturn(Optional.of(new Usuario()));
 
-		// Simular error al eliminar
-		doThrow(new InternalServerErrorException("Error al eliminar el usuario"))
+		doThrow(new InternalServerErrorException("Error al eliminar"))
 				.when(usuarioRepository).deleteById(id);
 
-		// Verificar que se lanza InternalServerErrorException
 		assertThrows(InternalServerErrorException.class, () -> {
 			usuarioService.eliminarUsuarioPorId(id);
 		});
 	}
 	@Test
 	void testActualizarUsuarioExistente() {
+		TenantContext.setTenantId("tenant-test");
 		Long id = 1L;
-		UsuarioDto usuarioDto = new UsuarioDto();
-		usuarioDto.setEmail("actualizado@example.com");
-		usuarioDto.setId(id);
+		UsuarioDto dto = new UsuarioDto();
+		dto.setEmail("actualizado@example.com");
+		dto.setId(id);
 
-		// Configurar comportamiento simulado del repositorio
-		when(usuarioRepository.findById(id)).thenReturn(java.util.Optional.of(new Usuario()));
-		when(modelMapper.map(usuarioDto, Usuario.class)).thenAnswer(invocation -> {
-			UsuarioDto dto = invocation.getArgument(0);
-			Usuario user = new Usuario();
-			user.setEmail(dto.getEmail());
-			user.setId(dto.getId());
-			return user;
+		when(usuarioRepository.findByIdAndTenantId(id, "tenant-test")).thenReturn(Optional.of(new Usuario()));
+		when(modelMapper.map(dto, Usuario.class)).thenAnswer(inv -> {
+			Usuario u = new Usuario();
+			u.setId(dto.getId());
+			u.setEmail(dto.getEmail());
+			return u;
 		});
-		when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
-		when(modelMapper.map(any(Usuario.class), eq(UsuarioDto.class))).thenAnswer(invocation -> {
-			Usuario user = invocation.getArgument(0);
-			UsuarioDto dto = new UsuarioDto();
-			dto.setEmail(user.getEmail());
-			dto.setId(user.getId());
-			return dto;
+		when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(modelMapper.map(any(Usuario.class), eq(UsuarioDto.class))).thenAnswer(inv -> {
+			Usuario u = inv.getArgument(0);
+			UsuarioDto result = new UsuarioDto();
+			result.setEmail(u.getEmail());
+			result.setId(u.getId());
+			return result;
 		});
 
-		// Ejecutar método y verificar resultado
-		UsuarioDto resultado = usuarioService.actualizarUsuario(id, usuarioDto);
-
-		assertThat(resultado).isNotNull();
-		assertThat(resultado.getEmail()).isEqualTo("actualizado@example.com");
-		assertThat(resultado.getId()).isEqualTo(id);
-		verify(usuarioRepository).findById(id);
+		UsuarioDto result = usuarioService.actualizarUsuario(id, dto);
+		assertThat(result).isNotNull();
+		assertThat(result.getEmail()).isEqualTo("actualizado@example.com");
+		verify(usuarioRepository).findByIdAndTenantId(id, "tenant-test");
 		verify(usuarioRepository).save(any(Usuario.class));
 	}
 
 	@Test
 	void testActualizarUsuarioNoExistente() {
+		TenantContext.setTenantId("tenant-test");
 		Long id = 999L;
-		UsuarioDto usuarioDto = new UsuarioDto();
-		usuarioDto.setEmail("noexiste@example.com");
+		UsuarioDto dto = new UsuarioDto();
+		dto.setEmail("noexiste@example.com");
 
-		// Configurar comportamiento para usuario no encontrado
-		when(usuarioRepository.findById(id)).thenReturn(java.util.Optional.empty());
-		// Verificar que se lanza NotFoundException
+		when(usuarioRepository.findByIdAndTenantId(id, "tenant-test")).thenReturn(Optional.empty());
+
 		assertThrows(NotFoundException.class, () -> {
-			usuarioService.actualizarUsuario(id, usuarioDto);
+			usuarioService.actualizarUsuario(id, dto);
 		});
-		verify(usuarioRepository).findById(id);
-		verify(usuarioRepository, never()).save(any(Usuario.class));
 
+		verify(usuarioRepository).findByIdAndTenantId(id, "tenant-test");
+		verify(usuarioRepository, never()).save(any(Usuario.class));
 	}
 
 	@Test
 	void testActualizarUsuarioExcepcionFindById() {
+		TenantContext.setTenantId("tenant-test");
 		Long id = 1L;
-		UsuarioDto usuarioDto = new UsuarioDto();
+		UsuarioDto dto = new UsuarioDto();
 
-		// Configurar excepción en findById
-		when(usuarioRepository.findById(id)).thenThrow(new NotFoundException("Error de base de datos"));
+		when(usuarioRepository.findByIdAndTenantId(id, "tenant-test"))
+				.thenThrow(new NotFoundException("Error de base de datos"));
 
-		// Verificar que se lanza NotFoundException
 		assertThrows(NotFoundException.class, () -> {
-			usuarioService.actualizarUsuario(id, usuarioDto);
+			usuarioService.actualizarUsuario(id, dto);
 		});
 
-		verify(usuarioRepository).findById(id);
+		verify(usuarioRepository).findByIdAndTenantId(id, "tenant-test");
 	}
+
 
 	@Test
 	void testObtenerUsuariosPaginados(){

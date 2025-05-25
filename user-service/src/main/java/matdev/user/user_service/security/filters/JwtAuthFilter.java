@@ -3,6 +3,7 @@ package matdev.user.user_service.security.filters;
 import java.io.IOException;
 
 import matdev.user.user_service.context.TenantContext;
+import matdev.user.user_service.security.token.TenantUsernamePasswordAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -110,9 +111,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     logger.debug("Is token valid: " + isTokenValid);
 
     if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
-      UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-              userDetails, null, userDetails.getAuthorities()
-      );
+
+        TenantUsernamePasswordAuthenticationToken authToken =
+            new TenantUsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    TenantContext.getTenantId(), // tenantId explícito
+                    userDetails.getAuthorities()
+            );
       authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
       SecurityContextHolder.getContext().setAuthentication(authToken);
       logger.debug("Authentication set in SecurityContext for user: " + userEmail);

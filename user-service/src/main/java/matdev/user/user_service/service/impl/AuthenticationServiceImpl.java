@@ -46,8 +46,10 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     @Override
     public JwtAuthResponse authentication(AuthenticationRequestDto request) {
         LOGGER.info("Authenticating user with email: {}", request.getUsername());
-        Usuario usuario = usuarioRepository.findByEmail(request.getUsername())
-                .orElseThrow(() -> new NotFoundException("User not found"));
+        Usuario usuario = usuarioRepository.findByEmailAndTenantId(
+                request.getUsername(),
+                request.getTenantId()
+        ).orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
         
         authenticateUser(request.getUsername(), request.getPassword());
         String token = jwtService.generateToken(usuario);
@@ -125,9 +127,10 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     
         String refreshToken = extractToken(authHeader);
         String userEmail = jwtService.extractUsername(refreshToken);
+        String tenantId = jwtService.extractTenantId(refreshToken);
     
         if (userEmail != null) {
-          processRefreshToken(response, refreshToken, userEmail);
+          processRefreshToken(response, refreshToken, userEmail, tenantId);
         }
     }
 
@@ -139,8 +142,10 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         return authHeader.substring(AuthConstant.BEARER_PREFIX.length());
     }
 
-    private void processRefreshToken(HttpServletResponse response, String refreshToken, String userEmail) throws IOException {
-        Usuario user = usuarioRepository.findByEmail(userEmail).orElseThrow();
+    private void processRefreshToken(HttpServletResponse response, String refreshToken, String userEmail, String tenantId) throws IOException {
+        Usuario user = usuarioRepository.findByEmailAndTenantId(userEmail, tenantId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+
         if (jwtService.isTokenValid(refreshToken, user)) {
           String accessToken = jwtService.generateToken(user);
           revokeAllUserTOkens(user);

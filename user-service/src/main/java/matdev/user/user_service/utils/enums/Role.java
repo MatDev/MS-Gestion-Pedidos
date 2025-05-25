@@ -9,8 +9,7 @@ import matdev.user.user_service.utils.constants.RoleConstant;
 public enum Role {
    
     ROLE_ADMIN(RoleConstant.ADMIN),
-    ROLE_MESERO(RoleConstant.MESERO),
-    ROLE_COCINERO(RoleConstant.COCINERO);
+    ROLE_MESERO(RoleConstant.EMPLEADO),
 
 
     private final String roleName;

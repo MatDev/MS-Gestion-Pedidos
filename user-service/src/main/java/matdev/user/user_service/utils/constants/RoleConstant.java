@@ -7,8 +7,8 @@ public class RoleConstant {
     }
 
     public static final String ADMIN = "ADMIN";
-    public static final String MESERO = "MESERO";
-    public static final String COCINERO= "COCINERO";
+    public static final String EMPLEADO = "EMPLEADO";
+
     
 
 }

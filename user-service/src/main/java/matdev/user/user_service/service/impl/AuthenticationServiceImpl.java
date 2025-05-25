@@ -117,7 +117,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
    }
 
     @Override
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
        
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (isInvalidAuthHeader(authHeader)) {

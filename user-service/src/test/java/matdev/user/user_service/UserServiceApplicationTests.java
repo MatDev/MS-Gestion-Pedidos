@@ -334,7 +334,7 @@ class UserServiceApplicationTests {
 		Page<Usuario> paginaUsuarios = new PageImpl<>(listaUsuarios, pageable, listaUsuarios.size());
 
 		// Configurar comportamiento simulado
-		when(usuarioRepository.findAllByTenantId(eq("tenant-test"), eq(pageable)))
+		when(usuarioRepository.findAllByTenantId("tenant-test", pageable))
 				.thenReturn(paginaUsuarios);
 		when(modelMapper.map(any(Usuario.class), eq(UsuarioDto.class))).thenAnswer(invocation -> {
 			Usuario usuario = invocation.getArgument(0);
@@ -369,19 +369,17 @@ class UserServiceApplicationTests {
 
 	@Test
 	void testObtenerUsuariosConExcepcion() {
-		// Configurar datos de prueba
 		Pageable pageable = PageRequest.of(0, 10);
+		TenantContext.setTenantId("tenant-test");
 
-		// Configurar comportamiento simulado (lanzar excepción)
-		when(usuarioRepository.findAll(pageable)).thenThrow(new RuntimeException("Error en la base de datos"));
+		when(usuarioRepository.findAllByTenantId("tenant-test", pageable))
+				.thenThrow(new RuntimeException("Error en la base de datos"));
 
-		// Verificar que se lanza InternalServerErrorException
 		assertThrows(InternalServerErrorException.class, () -> {
 			usuarioService.obtenerUsuarios(pageable);
 		});
 
-		// Verificar interacciones
-		verify(usuarioRepository).findAll(pageable);
+		verify(usuarioRepository).findAllByTenantId("tenant-test", pageable);
 	}
 
 

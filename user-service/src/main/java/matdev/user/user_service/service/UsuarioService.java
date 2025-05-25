@@ -7,7 +7,10 @@ import org.springframework.data.domain.Pageable;
 
 import matdev.user.user_service.dto.UsuarioDto;
 import matdev.user.user_service.dto.request.RegisterRequest;
-
+/**
+ * Servicio de usuario multi-tenant.
+ * Todas las operaciones se ejecutan usando el tenantId extraído desde el contexto.
+ */
 
 public interface UsuarioService {
     UsuarioDto crearUsuario(RegisterRequest registerRequest);

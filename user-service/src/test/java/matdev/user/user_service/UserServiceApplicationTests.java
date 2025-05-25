@@ -228,16 +228,18 @@ class UserServiceApplicationTests {
 	@Test
 
 	void testDeleteUsuarioPorIdNotFound() {
+		TenantContext.setTenantId("tenant-test");
 		Long id = 1L;
 		// Simular que no existe el usuario
-		when(usuarioRepository.findById(id)).thenReturn(java.util.Optional.empty());
-
+		when(usuarioRepository.findByIdAndTenantId(id, "tenant-test"))
+				.thenReturn(Optional.empty());
 		// Verificar que se lanza NotFoundException
 		assertThrows(NotFoundException.class, () -> {
 			usuarioService.eliminarUsuarioPorId(id);
 		});
 
 		// Verificar que deleteById nunca se llamó
+		verify(usuarioRepository).findByIdAndTenantId(id, "tenant-test");
 		verify(usuarioRepository, never()).deleteById(id);
 	}
 
@@ -323,6 +325,7 @@ class UserServiceApplicationTests {
 	@Test
 	void testObtenerUsuariosPaginados(){
 		Pageable pageable = PageRequest.of(0,10);
+		TenantContext.setTenantId("tenant-test");
 		// Crear una lista de usuarios simulados
 		List<Usuario> listaUsuarios = Arrays.asList(
 				crearUsuario(1L, "user1", "user1@example.com", "password1"),
@@ -331,7 +334,8 @@ class UserServiceApplicationTests {
 		Page<Usuario> paginaUsuarios = new PageImpl<>(listaUsuarios, pageable, listaUsuarios.size());
 
 		// Configurar comportamiento simulado
-		when(usuarioRepository.findAll(pageable)).thenReturn(paginaUsuarios);
+		when(usuarioRepository.findAllByTenantId(eq("tenant-test"), eq(pageable)))
+				.thenReturn(paginaUsuarios);
 		when(modelMapper.map(any(Usuario.class), eq(UsuarioDto.class))).thenAnswer(invocation -> {
 			Usuario usuario = invocation.getArgument(0);
 			UsuarioDto dto = new UsuarioDto();
@@ -351,7 +355,7 @@ class UserServiceApplicationTests {
 		assertThat(resultado.getContent().get(1).getEmail()).isEqualTo("user2@example.com");
 
 		// Verificar interacciones
-		verify(usuarioRepository).findAll(pageable);
+		verify(usuarioRepository).findAllByTenantId("tenant-test", pageable);
 	}
 
 	private Usuario crearUsuario(Long id, String username, String email, String password) {

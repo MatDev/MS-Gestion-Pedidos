@@ -1,6 +1,8 @@
 package matdev.user.user_service.controllers;
 
-import java.util.logging.Logger;
+import matdev.user.user_service.utils.LogSanitizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,25 +33,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RestController
 public class UsuarioControllers {
     private final UsuarioService usuarioService;
-    private static final Logger LOGGER = Logger.getLogger(UsuarioControllers.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioControllers.class);
 
     @PostMapping("users/register")
     public ResponseEntity<UsuarioDto> register(@RequestBody RegisterRequest registerRequest) {
-        LOGGER.info("Reques recibida para crear usuario con email: " + registerRequest.getEmail());
+        LOGGER.info("Reques recibida para crear usuario con email: {}" , registerRequest.getEmail());
         try {
             UsuarioDto usuario = usuarioService.crearUsuario(registerRequest);
-            LOGGER.info("Usuario creado con éxito con id: " + usuario.getId());
+            LOGGER.info("Usuario creado con éxito con id: {}" , usuario.getId());
             return ResponseEntity.status(HttpStatus.SC_CREATED).body(usuario);
             
         } catch (IllegalArgumentException e) {
-            LOGGER.severe("Datos incorrectos: " + e.getMessage());
+            LOGGER.error("Datos incorrectos: {} " , e.getMessage());
             return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).build();
            
         } catch (UnauthorizedUserException e) {
-            LOGGER.severe("Usuario no autorizado: " + e.getMessage());
+            LOGGER.error("Usuario no autorizado: {} " , e.getMessage());
             return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).build();
         } catch (Exception e) {
-            LOGGER.severe("Error al crear usuario: " + e.getMessage());
+            LOGGER.error("Error al crear usuario: {} " , e.getMessage());
             return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).build();
         }
        
@@ -64,20 +66,20 @@ public class UsuarioControllers {
             LOGGER.info("Usuarios obtenidos con éxito");
             return ResponseEntity.ok(usuarios);
         } catch (Exception e) {
-            LOGGER.severe("Error al obtener usuarios: " + e.getMessage());
+            LOGGER.error("Error al obtener usuarios: {}" , e.getMessage());
             return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).build();
         }
     }
     
     @PutMapping("users/{id}")
-    public ResponseEntity<UsuarioDto> putMethodName(@PathVariable String id, @RequestBody UsuarioDto usuarioDto) {
-        LOGGER.info("Reques recibida para actualizar usuario con id: " + id);
+    public ResponseEntity<UsuarioDto> updateUser(@PathVariable String id, @RequestBody UsuarioDto usuarioDto) {
+        LOGGER.info("Reques recibida para actualizar usuario con id: {}" , LogSanitizer.clean(id));
         try {
             UsuarioDto usuario = usuarioService.actualizarUsuario(Long.parseLong(id), usuarioDto);
-            LOGGER.info("Usuario actualizado con éxito con id: " + usuario.getId());
+            LOGGER.info("Usuario actualizado con éxito con id:{} " , usuario.getId());
             return ResponseEntity.ok(usuario);
         } catch (Exception e) {
-            LOGGER.severe("Error al actualizar usuario: " + e.getMessage());
+            LOGGER.error("Error al actualizar usuario: {}" , e.getMessage());
             throw new RuntimeException("Error al actualizar usuario");
         }
     }

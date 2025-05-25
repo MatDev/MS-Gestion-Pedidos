@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import matdev.user.user_service.entity.Usuario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,11 @@ public class JwtService {
     public String extractUsername(String token){
         // se pasa a la funcion extractClaim el token y la funcion que se encargara de extraer el claim necesario
         return extractClaim(token, Claims::getSubject);
+    }
+    // funcion para extraer el tenantId del token
+    public String extractTenantId(String token){
+        // se pasa a la funcion extractClaim el token y la funcion que se encargara de extraer el claim necesario
+        return extractClaim(token, claims -> claims.get(AuthConstant.TENANT_ID_CLAIM, String.class));
     }
 
     // funcion para extrar los claims del token
@@ -91,6 +97,7 @@ public class JwtService {
     return Jwts.builder()
             .setClaims(claims)
             .setSubject(userDetails.getUsername())
+            .claim(AuthConstant.TENANT_ID_CLAIM, ((Usuario) userDetails).getTenantId())
             .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
             .setExpiration(new java.util.Date(System.currentTimeMillis() + expiration))
             .signWith(getSignInKey(), SignatureAlgorithm.HS256)

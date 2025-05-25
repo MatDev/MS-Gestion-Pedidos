@@ -151,6 +151,7 @@ public class UsuarioServiceImpl implements UsuarioService{
         usuario.setPassword(registerRequest.getPassword());
         usuario.setUsername(registerRequest.getUsername());
         usuario.setRole(registerRequest.getRole());
+        usuario.setTenantId(registerRequest.getTenantId());
         return usuario;
     }
 

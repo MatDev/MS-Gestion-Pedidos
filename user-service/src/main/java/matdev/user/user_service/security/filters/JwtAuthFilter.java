@@ -2,6 +2,7 @@ package matdev.user.user_service.security.filters;
 
 import java.io.IOException;
 
+import matdev.user.user_service.context.TenantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -36,10 +37,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
+            throws ServletException, IOException
+    {
+        try {
 
-       LOGGER.debug("processing authentication for '{}'", request.getRequestURL());
-        if(isAuthPath(request)){
+
+        LOGGER.debug("processing authentication for '{}'", request.getRequestURL());
+        if (isAuthPath(request)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -48,11 +52,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (isInvalidAuthHeader(authHeader)) {
             LOGGER.debug("Invalid auth header, proceeding with filter chain");
             filterChain.doFilter(request, response);
-        return;
+            return;
         }
 
         final String jwt = extractJwtFromHeader(authHeader);
         final String userEmail;
+
 
         try {
             userEmail = jwtService.extractUsername(jwt);
@@ -66,14 +71,33 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        try {
+            String tenantId = jwtService.extractTenantId(jwt);
+            TenantContext.setTenantId(tenantId);
+        }catch (IllegalArgumentException e) {
+            LOGGER.warn("Invalid tenant ID in token: {}", e.getMessage());
+            handleException(response, "Invalid tenant ID", HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+
+
+
+
         if (userEmail != null && isNotAuthenticated()) {
             processTokenAuthentication(request, jwt, userEmail);
         }
-      
+
         filterChain.doFilter(request, response);
 
-
+        }finally {
+        TenantContext.clear();
+        }
     }
+
+
+
+
 
 
      private void processTokenAuthentication(HttpServletRequest request, String jwt, String userEmail) {

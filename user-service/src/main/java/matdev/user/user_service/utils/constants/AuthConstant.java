@@ -6,6 +6,7 @@ public class AuthConstant {
         private AuthConstant() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
         }
+        public static final String TENANT_ID_CLAIM = "tenantId";
         public static final String AUTHORIZATION_HEADER = "Authorization";
         public static final String BEARER_PREFIX = "Bearer ";
         public static final String ROLE_CLAIM = "role";

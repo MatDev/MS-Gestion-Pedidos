@@ -13,4 +13,5 @@ public class RegisterRequest extends UsuarioDto {
     private String confirmPassword;
     private String email;
     private Role role;
+    private String tenantId;
 }

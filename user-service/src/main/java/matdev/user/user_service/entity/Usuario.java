@@ -34,25 +34,29 @@ public class Usuario implements UserDetails{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @Column(nullable = false , unique = true)
     @NotNull(message = "Username cannot be null")
     @Size(min=4 ,max =30,message ="El usuername debe tener entre {min} y {max} caracteres")
-    String username;
+    private String username;
 
     @Column(nullable = false , unique = true)
     @NotNull(message = "Email cannot be null")
     @Email(message = "Email should be valid")
-    String email;
+    private String email;
 
     @Column(nullable = false)
     @NotNull
-    String password;
+    private String password;
 
     @Enumerated(EnumType.STRING)
     @NotNull
     private Role role;
+
+    @Column(name = "tenant_id", nullable = false)
+    @NotNull(message = "Tenant ID cannot be null")
+    private String tenantId;
 
 
 

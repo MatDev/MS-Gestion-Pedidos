@@ -1,7 +1,6 @@
 package matdev.user.user_service.config;
 
 import lombok.RequiredArgsConstructor;
-import matdev.user.user_service.security.filters.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -16,7 +15,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityFilterConfig {
-    private final JwtAuthFilter jwtAuthFilter;
+
     private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
     private final CorsConfigurationSource corsConfigurationSource;

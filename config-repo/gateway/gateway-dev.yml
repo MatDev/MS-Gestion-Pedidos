@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+
+server:
+  port: 8080
+
+gateway:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY:adef760a77fd57aebbc322ad744ee640e35f32e5d304eccbac7810f7f6013721bac35e0261cd854860e5b432b0cf59e3c34260efafb16f18a802d9da4370ab3b}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**

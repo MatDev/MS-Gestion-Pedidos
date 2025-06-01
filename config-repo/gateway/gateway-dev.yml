@@ -8,10 +8,18 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        - id: user-service
+        - id: user-service-auth
           uri: lb://user-service
           predicates:
             - Path=/api/auth/**
+
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+              - Path=/api/user/**
+          filters:
+            - JwtFilter
+
 
 server:
   port: 8080
@@ -25,15 +33,3 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
-
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-      routes:
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/api/auth/**

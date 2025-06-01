@@ -35,7 +35,7 @@ public class UsuarioControllers {
     private final UsuarioService usuarioService;
     private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioControllers.class);
 
-    @PostMapping("users/register")
+    @PostMapping("/users/register")
     public ResponseEntity<UsuarioDto> register(@RequestBody RegisterRequest registerRequest) {
         LOGGER.info("Reques recibida para crear usuario con email: {}" , registerRequest.getEmail());
         try {
@@ -58,7 +58,7 @@ public class UsuarioControllers {
 
     }
     //con paginacion
-    @GetMapping("users")
+    @GetMapping("/users")
     public ResponseEntity<Page<UsuarioDto>> getUsers(@PageableDefault(page = 0, size = 10) Pageable pageable) {
         LOGGER.info("Reques recibida para obtener usuarios");
         try {
@@ -71,7 +71,7 @@ public class UsuarioControllers {
         }
     }
     
-    @PutMapping("users/{id}")
+    @PutMapping("/users/{id}")
     public ResponseEntity<UsuarioDto> updateUser(@PathVariable String id, @RequestBody UsuarioDto usuarioDto) {
         LOGGER.info("Reques recibida para actualizar usuario con id: {}" , LogSanitizer.clean(id));
         try {
@@ -80,7 +80,21 @@ public class UsuarioControllers {
             return ResponseEntity.ok(usuario);
         } catch (Exception e) {
             LOGGER.error("Error al actualizar usuario: {}" , e.getMessage());
-            throw new RuntimeException("Error al actualizar usuario");
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<UsuarioDto> getUserById(@PathVariable String id) {
+        LOGGER.info("Reques recibida para obtener usuario por id: {}" , LogSanitizer.clean(id));
+        try {
+            UsuarioDto usuario = usuarioService.obtenerUsuarioPorId(Long.parseLong(id))
+                    .orElseThrow(() -> new UnauthorizedUserException("Usuario no encontrado"));
+            LOGGER.info("Usuario encontrado con id: {}", usuario.getId());
+            return ResponseEntity.ok(usuario);
+        } catch (Exception e) {
+            LOGGER.error("Error al obtener usuario por id: {}" , e.getMessage());
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).build();
         }
     }
 

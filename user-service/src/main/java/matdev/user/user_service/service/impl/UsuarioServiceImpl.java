@@ -13,6 +13,7 @@ import matdev.user.user_service.exeption.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,10 +60,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public Optional<UsuarioDto> obtenerUsuarioPorEmail(
-            @NotNull(message ="El email no puede ser null")
-            @Email(message ="Formato de email invalido ")
-            @NotEmpty(message ="Email no puede ser vacio") final String email) {
+    public Optional<UsuarioDto> obtenerUsuarioPorEmail( @NotNull @Email @NotEmpty final String email) {
         LOGGER.info("Obteniendo usuario por email:{}", email);
         String tenantId = TenantContext.getTenantId();
 

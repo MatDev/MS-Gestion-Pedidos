@@ -21,7 +21,7 @@ public class JwtService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtService.class);
 
     @Value("${gateway.security.jwt.secret-key}")
-    private String secretKey;
+    public String secretKey;
 
 
     private Key getSignInKey() {

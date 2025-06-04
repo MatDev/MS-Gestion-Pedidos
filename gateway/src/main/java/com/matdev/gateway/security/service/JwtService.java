@@ -50,6 +50,7 @@ public class JwtService {
 
 
     public boolean isValid(String token) {
+        LOGGER.info("Validando token JWT: {}", token);
         try {
             Claims claims = extractAllClaims(token);
 

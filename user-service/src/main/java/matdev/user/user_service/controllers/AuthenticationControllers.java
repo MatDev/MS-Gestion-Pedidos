@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthenticationControllers {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationControllers.class);
@@ -28,7 +28,7 @@ public class AuthenticationControllers {
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> login(@RequestBody AuthenticationRequestDto request) {
         LOGGER.info("Received request to authenticate user with email: {}", request.getUsername());
-        JwtAuthResponse response = authenticationService.authentication(request);
+        JwtAuthResponse response = authenticationService.auth(request);
         LOGGER.info("User authenticated successfully with email: {}", request.getUsername());
         return ResponseEntity.ok(response);
     }

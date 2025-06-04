@@ -8,6 +8,6 @@ import matdev.user.user_service.dto.response.JwtAuthResponse;
 import java.io.IOException;
 
 public interface AuthenticationService {
-    JwtAuthResponse authentication(AuthenticationRequestDto request);
+    JwtAuthResponse auth(AuthenticationRequestDto request);
     void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException;
 } 

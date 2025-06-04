@@ -9,5 +9,13 @@ spring:
   config:
     import: configserver:http://localhost:8889
 
-
+logging:
+  level:
+    root: DEBUG
+    org.springframework: DEBUG
+    org.springframework.cloud: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot: DEBUG
+    com.matdev: DEBUG
+debug: true
 

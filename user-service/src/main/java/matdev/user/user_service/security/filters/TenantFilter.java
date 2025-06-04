@@ -14,6 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+
+
 @Component
 @Order(1)
 public class TenantFilter extends OncePerRequestFilter {
@@ -21,6 +23,11 @@ public class TenantFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        String path=request.getServletPath();
+        if (path.equals("/api/auth/login") || path.equals("/api/auth/refresh-token")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String tenantId= request.getHeader(AuthConstant.TENANT_HEADER);
         if (tenantId == null || tenantId.isEmpty()) {
             LOGGER.error("Tenant ID is missing in the request header");

@@ -6,15 +6,18 @@ import matdev.user.user_service.repository.UsuarioRepository;
 import matdev.user.user_service.security.token.TenantUsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
-import java.util.List;
 
-@Component
+import java.util.Collection;
+import java.util.Collections;
+
+
+
 @RequiredArgsConstructor
 
 public class TenantAuthenticationProvider implements AuthenticationProvider {
@@ -38,13 +41,23 @@ public class TenantAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Credenciales inválidas");
         }
 
-        return new UsernamePasswordAuthenticationToken(usuario, null, List.of());
+        // Crear authorities basado en el rol
+        Collection<GrantedAuthority> authorities = Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + usuario.getRole())
+        );
+
+        // CAMBIO CRÍTICO: Retornar el token personalizado autenticado
+        return new TenantUsernamePasswordAuthenticationToken(
+                usuario.getEmail(),
+                null, // Limpiar password por seguridad
+                tenantId,
+                authorities
+        );
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
         return TenantUsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
-
 
 }

@@ -1,6 +1,7 @@
 package matdev.user.user_service.service.impl;
 
 
+import matdev.user.user_service.security.token.TenantUsernamePasswordAuthenticationToken;
 import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
@@ -9,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,14 +45,16 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
 
     @Override
-    public JwtAuthResponse authentication(AuthenticationRequestDto request) {
+    public JwtAuthResponse auth(AuthenticationRequestDto request) {
         LOGGER.info("Authenticating user with email: {}", request.getUsername());
         Usuario usuario = usuarioRepository.findByEmailAndTenantId(
                 request.getUsername(),
                 request.getTenantId()
-        ).orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
-        
-        authenticateUser(request.getUsername(), request.getPassword());
+        ).orElseThrow(() -> new NotFoundException("BadCredentials"));
+
+        LOGGER.info("User found with email: {}", request.getUsername());
+        authenticateUser(request.getUsername(), request.getPassword(), request.getTenantId());
+        LOGGER.info("Se inicia el proceso del JWT Token");
         String token = jwtService.generateToken(usuario);
         String refreshToken = jwtService.generateRefreshToken(usuario);
         LOGGER.info("User authenticated with email: {}", request.getUsername());
@@ -61,12 +64,13 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
         return buildAuthResponse(token, refreshToken);
 
-        
+
 
 
     }
 
     private JwtAuthResponse buildAuthResponse(String token, String refreshToken) {
+        LOGGER.info("Building JWT Auth Response");
         return JwtAuthResponse.builder()
         .accessToken(token)
         .refreshToken(refreshToken)
@@ -89,7 +93,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
            exisToken.setExpired(false);
            exisToken.setRevoked(false);
            tokenRepository.save(exisToken);
-            
+
         }
 
 
@@ -99,36 +103,42 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         var validUserTokens = tokenRepository.findAllValidUserTokens(usuario.getId());
         if (validUserTokens.isEmpty()) {
             LOGGER.info("No tokens to revoke for user with id: {}", usuario.getId());
-            return; 
+            return;
         }
         validUserTokens.forEach(token -> {
             token.setRevoked(true);
             token.setExpired(true);
-            
+
         });
         tokenRepository.saveAll(validUserTokens);
         LOGGER.info("Revoked all tokens for user with id: {}", usuario.getId());
     }
 
-    private void authenticateUser(String email, String password) {
-    authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(email, password)
-    );
+    private void authenticateUser(String username, String password, String tenantId) {
+        LOGGER.info("Authenticating user with email: {}", username);
+        authenticationManager.authenticate(
+           new TenantUsernamePasswordAuthenticationToken(
+                   username,
+                   password,
+                   tenantId
+           )
+        );
+        LOGGER.info("User authenticated successfully with email: {}", username);
    }
 
     @Override
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-       
+
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (isInvalidAuthHeader(authHeader)) {
           LOGGER.warn("Invalid authorization header during token refresh");
           return;
         }
-    
+
         String refreshToken = extractToken(authHeader);
         String userEmail = jwtService.extractUsername(refreshToken);
         String tenantId = jwtService.extractTenantId(refreshToken);
-    
+
         if (userEmail != null) {
           processRefreshToken(response, refreshToken, userEmail, tenantId);
         }
@@ -155,6 +165,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     }
 
     private void writeAuthResponse(HttpServletResponse response, JwtAuthResponse authResponse) throws IOException {
+    LOGGER.info("Writing authentication response to the output stream");
     response.setContentType(AuthConstant.CONTENT_TYPE_JSON);
     new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
   }

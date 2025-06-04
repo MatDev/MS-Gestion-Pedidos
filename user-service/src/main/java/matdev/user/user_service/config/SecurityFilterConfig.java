@@ -21,8 +21,8 @@ public class SecurityFilterConfig {
     private final CorsConfigurationSource corsConfigurationSource;
 
     private  static final String[] PATH_WHITELIST = {
-            "/auth/login",
-            "/auth/refresh-token",
+            "/api/auth/login",
+            "/api/auth/refresh-token",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",

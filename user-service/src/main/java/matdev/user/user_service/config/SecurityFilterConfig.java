@@ -27,7 +27,8 @@ public class SecurityFilterConfig {
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/webjars/**",
-            "/users/**"
+            "/users/**",
+            "/api/user/**"
     };
 
     @Bean

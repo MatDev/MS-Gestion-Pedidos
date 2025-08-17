@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 import matdev.user.user_service.dto.UsuarioDto;
 import matdev.user.user_service.dto.request.RegisterRequest;
-import matdev.user.user_service.exeption.UnauthorizedUserException;
+import matdev.user.user_service.exception.UnauthorizedUserException;
 
 
 @RequiredArgsConstructor

@@ -1,7 +1,6 @@
 package com.matdev.menuservice.Mapper;
 
 
-import com.matdev.menuservice.domain.model.Menu;
 import com.matdev.menuservice.domain.model.MenuItem;
 import com.matdev.menuservice.dto.MenuDto;
 import com.matdev.menuservice.dto.MenuItemDto;

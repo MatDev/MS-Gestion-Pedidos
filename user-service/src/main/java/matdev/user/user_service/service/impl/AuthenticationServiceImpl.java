@@ -22,7 +22,7 @@ import matdev.user.user_service.dto.request.AuthenticationRequestDto;
 import matdev.user.user_service.dto.response.JwtAuthResponse;
 import matdev.user.user_service.entity.Token;
 import matdev.user.user_service.entity.Usuario;
-import matdev.user.user_service.exeption.NotFoundException;
+import matdev.user.user_service.exception.NotFoundException;
 import matdev.user.user_service.repository.TokenRepository;
 import matdev.user.user_service.repository.UsuarioRepository;
 import matdev.user.user_service.security.service.JwtService;

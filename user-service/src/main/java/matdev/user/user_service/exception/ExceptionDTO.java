@@ -1,4 +1,4 @@
-package matdev.user.user_service.exeption;
+package matdev.user.user_service.exception;
 
 import java.time.LocalDateTime;
 

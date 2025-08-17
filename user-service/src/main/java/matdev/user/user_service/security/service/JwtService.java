@@ -21,8 +21,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import matdev.user.user_service.exeption.ExpireTokenException;
-import matdev.user.user_service.exeption.InvalidTokenException;
+import matdev.user.user_service.exception.ExpireTokenException;
+import matdev.user.user_service.exception.InvalidTokenException;
 import matdev.user.user_service.utils.constants.AuthConstant;
 
 @Service

@@ -1,11 +1,11 @@
-package matdev.user.user_service.exeption.handler;
+package matdev.user.user_service.exception.handler;
 
 
 
 
 
 import jakarta.validation.ConstraintViolationException;
-import matdev.user.user_service.exeption.*;
+import matdev.user.user_service.exception.*;
 import org.slf4j.Logger;
 
 import org.springframework.http.HttpStatus;

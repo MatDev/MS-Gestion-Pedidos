@@ -2,7 +2,7 @@ package com.matdev.menuservice.exception;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import matdev.user.user_service.exception.ExceptionDTO;
+
 
 import java.util.ArrayList;
 import java.util.List;

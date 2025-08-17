@@ -6,14 +6,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class InternalServerErrorException extends RuntimeException {
-    private String code;
-    public InternalServerErrorException(String message) {
-        super(message);
-    }
+    private final String code;
     public InternalServerErrorException(String message, String code) {
         super(message);
         this.code = code;
     }
-
 
 }

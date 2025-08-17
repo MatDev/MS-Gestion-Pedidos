@@ -3,6 +3,7 @@ package com.matdev.menuservice.service.impl;
 import com.matdev.menuservice.Mapper.MenuMapper;
 import com.matdev.menuservice.context.TenantContext;
 import com.matdev.menuservice.domain.model.Categoria;
+import com.matdev.menuservice.domain.model.Menu;
 import com.matdev.menuservice.domain.model.MenuItem;
 import com.matdev.menuservice.domain.repository.MenuItemRepository;
 import com.matdev.menuservice.domain.repository.MenuRepository;
